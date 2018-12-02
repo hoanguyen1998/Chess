@@ -15,7 +15,7 @@ import java.util.Observable;
 import static com.chess.engine.board.BoardUtils.mvvlva;
 import static com.chess.engine.board.Move.MoveFactory;
 
-public class StockAlphaBeta extends Observable implements MoveStrategy {
+public class AlphaBeta extends Observable implements MoveStrategy {
 
     private final BoardEvaluator evaluator;
     private final int searchDepth;
@@ -62,7 +62,7 @@ public class StockAlphaBeta extends Observable implements MoveStrategy {
     }
 
 
-    public StockAlphaBeta(final int searchDepth) {
+    public AlphaBeta(final int searchDepth) {
         this.evaluator = StandardBoardEvaluator.get();
         this.searchDepth = searchDepth;
         this.boardsEvaluated = 0;
@@ -71,7 +71,7 @@ public class StockAlphaBeta extends Observable implements MoveStrategy {
 
     @Override
     public String toString() {
-        return "StockAlphaBeta";
+        return "AlphaBetaPruning";
     }
 
     @Override

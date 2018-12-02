@@ -4,8 +4,7 @@ import com.chess.engine.board.*;
 import com.chess.engine.board.Move.MoveFactory;
 import com.chess.engine.pieces.Piece;
 import com.chess.engine.player.Player;
-import com.chess.engine.player.ai.StandardBoardEvaluator;
-import com.chess.engine.player.ai.StockAlphaBeta;
+import com.chess.engine.player.ai.AlphaBeta;
 import com.chess.pgn.GamePersistence;
 import com.google.common.collect.Lists;
 
@@ -201,29 +200,6 @@ public final class Table extends Observable {
 
         });
         optionsMenu.add(resetMenuItem);
-
-        final JMenuItem evaluateBoardMenuItem = new JMenuItem("Evaluate Board", KeyEvent.VK_E);
-        evaluateBoardMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                System.out.println(StandardBoardEvaluator.get().evaluate(chessBoard, gameSetup.getSearchDepth()));
-
-            }
-        });
-        optionsMenu.add(evaluateBoardMenuItem);
-
-        final JMenuItem escapeAnalysis = new JMenuItem("Escape Analysis Score", KeyEvent.VK_S);
-        escapeAnalysis.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                final Move lastMove = moveLog.getMoves().get(moveLog.size() - 1);
-                if(lastMove != null) {
-                    System.out.println(MoveUtils.exchangeScore(lastMove));
-                }
-
-            }
-        });
-        optionsMenu.add(escapeAnalysis);
 
         final JMenuItem legalMovesMenuItem = new JMenuItem("Current State", KeyEvent.VK_L);
         legalMovesMenuItem.addActionListener(new ActionListener() {
@@ -425,8 +401,8 @@ public final class Table extends Observable {
             }
             else {
 
-                final StockAlphaBeta strategy =
-                        new StockAlphaBeta(Table.get().getGameSetup().getSearchDepth());
+                final AlphaBeta strategy =
+                        new AlphaBeta(Table.get().getGameSetup().getSearchDepth());
                 strategy.addObserver(Table.get().getDebugPanel());
                 bestMove = strategy.execute(
                         Table.get().getGameBoard());
