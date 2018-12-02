@@ -6,8 +6,7 @@ import com.chess.engine.pieces.Piece;
 import com.chess.engine.player.Player;
 import com.chess.engine.player.ai.StandardBoardEvaluator;
 import com.chess.engine.player.ai.StockAlphaBeta;
-import com.chess.pgn.FenUtilities;
-import com.chess.pgn.MySqlGamePersistence;
+import com.chess.pgn.GamePersistence;
 import com.google.common.collect.Lists;
 
 import javax.imageio.ImageIO;
@@ -34,7 +33,7 @@ public final class Table extends Observable {
     private final DebugPanel debugPanel;
     private final BoardPanel boardPanel;
     private final MoveLog moveLog;
-    private final Setup gameSetup;
+    private final GameMode gameSetup;
     private Board chessBoard;
     private Move computerMove;
     private Tile sourceTile;
@@ -47,7 +46,7 @@ public final class Table extends Observable {
     private Color lightTileColor = Color.decode("#FFFACD");
     private Color darkTileColor = Color.decode("#593E1A");
 
-    private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(600, 600);
+    private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(700, 700);
     private static final Dimension BOARD_PANEL_DIMENSION = new Dimension(400, 350);
     private static final Dimension TILE_PANEL_DIMENSION = new Dimension(10, 10);
 
@@ -63,14 +62,14 @@ public final class Table extends Observable {
         this.boardDirection = BoardDirection.NORMAL;
         this.highlightLegalMoves = false;
         this.useBook = false;
-        this.pieceIconPath = "art/fancy/";
+        this.pieceIconPath = "image/";
         this.gameHistoryPanel = new GameHistoryPanel();
         this.debugPanel = new DebugPanel();
         this.takenPiecesPanel = new TakenPiecesPanel();
         this.boardPanel = new BoardPanel();
         this.moveLog = new MoveLog();
         this.addObserver(new TableGameAIWatcher());
-        this.gameSetup = new Setup(this.gameFrame, true);
+        this.gameSetup = new GameMode(this.gameFrame, true);
         this.gameFrame.add(this.takenPiecesPanel, BorderLayout.WEST);
         this.gameFrame.add(this.boardPanel, BorderLayout.CENTER);
         this.gameFrame.add(this.gameHistoryPanel, BorderLayout.EAST);
@@ -114,7 +113,7 @@ public final class Table extends Observable {
         return this.debugPanel;
     }
 
-    private Setup getGameSetup() {
+    private GameMode getGameSetup() {
         return this.gameSetup;
     }
 
@@ -136,7 +135,6 @@ public final class Table extends Observable {
 
     private void populateMenuBar(final JMenuBar tableMenuBar) {
         tableMenuBar.add(createFileMenu());
-        tableMenuBar.add(createPreferencesMenu());
         tableMenuBar.add(createOptionsMenu());
     }
 
@@ -152,31 +150,6 @@ public final class Table extends Observable {
     private JMenu createFileMenu() {
         final JMenu filesMenu = new JMenu("File");
         filesMenu.setMnemonic(KeyEvent.VK_F);
-
-        final JMenuItem openPGN = new JMenuItem("Load PGN File", KeyEvent.VK_O);
-        openPGN.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                JFileChooser chooser = new JFileChooser();
-                int option = chooser.showOpenDialog(Table.get().getGameFrame());
-                if (option == JFileChooser.APPROVE_OPTION) {
-                    loadPGNFile(chooser.getSelectedFile());
-                }
-            }
-        });
-        filesMenu.add(openPGN);
-
-        final JMenuItem openFEN = new JMenuItem("Load FEN File", KeyEvent.VK_F);
-        openFEN.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                String fenString = JOptionPane.showInputDialog("Input FEN");
-                undoAllMoves();
-                chessBoard = FenUtilities.createGameFromFEN(fenString);
-                Table.get().getBoardPanel().drawBoard(chessBoard);
-            }
-        });
-        filesMenu.add(openFEN);
 
         final JMenuItem saveToPGN = new JMenuItem("Save Game", KeyEvent.VK_S);
         saveToPGN.addActionListener(new ActionListener() {
@@ -216,7 +189,7 @@ public final class Table extends Observable {
 
     private JMenu createOptionsMenu() {
 
-        final JMenu optionsMenu = new JMenu("Options");
+        final JMenu optionsMenu = new JMenu("Settings");
         optionsMenu.setMnemonic(KeyEvent.VK_O);
 
         final JMenuItem resetMenuItem = new JMenuItem("New Game", KeyEvent.VK_P);
@@ -275,7 +248,7 @@ public final class Table extends Observable {
         });
         optionsMenu.add(undoMoveMenuItem);
 
-        final JMenuItem setupGameMenuItem = new JMenuItem("Setup", KeyEvent.VK_S);
+        final JMenuItem setupGameMenuItem = new JMenuItem("Change Game Mode", KeyEvent.VK_S);
         setupGameMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -285,28 +258,20 @@ public final class Table extends Observable {
         });
         optionsMenu.add(setupGameMenuItem);
 
-        return optionsMenu;
-    }
-
-    private JMenu createPreferencesMenu() {
-
-        final JMenu preferencesMenu = new JMenu("Preferences");
-
         final JMenu colorChooserSubMenu = new JMenu("Change Colors");
         colorChooserSubMenu.setMnemonic(KeyEvent.VK_S);
 
-        final JMenuItem chooseDarkMenuItem = new JMenuItem("Choose Dark Tile Color");
+        final JMenuItem chooseDarkMenuItem = new JMenuItem("Change Dark Tile Color");
         colorChooserSubMenu.add(chooseDarkMenuItem);
 
-        final JMenuItem chooseLightMenuItem = new JMenuItem("Choose Light Tile Color");
+        final JMenuItem chooseLightMenuItem = new JMenuItem("Change Light Tile Color");
         colorChooserSubMenu.add(chooseLightMenuItem);
 
-        preferencesMenu.add(colorChooserSubMenu);
 
         chooseDarkMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                final Color colorChoice = JColorChooser.showDialog(Table.get().getGameFrame(), "Choose Dark Tile Color",
+                final Color colorChoice = JColorChooser.showDialog(Table.get().getGameFrame(), "Change Dark Tile Color",
                         Table.get().getGameFrame().getBackground());
                 if (colorChoice != null) {
                     Table.get().getBoardPanel().setTileDarkColor(chessBoard, colorChoice);
@@ -317,7 +282,7 @@ public final class Table extends Observable {
         chooseLightMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                final Color colorChoice = JColorChooser.showDialog(Table.get().getGameFrame(), "Choose Light Tile Color",
+                final Color colorChoice = JColorChooser.showDialog(Table.get().getGameFrame(), "Change Light Tile Color",
                         Table.get().getGameFrame().getBackground());
                 if (colorChoice != null) {
                     Table.get().getBoardPanel().setTileLightColor(chessBoard, colorChoice);
@@ -325,7 +290,7 @@ public final class Table extends Observable {
             }
         });
 
-        final JMenuItem flipBoardMenuItem = new JMenuItem("Flip board");
+        final JMenuItem flipBoardMenuItem = new JMenuItem("Flip Board");
 
         flipBoardMenuItem.addActionListener(new ActionListener() {
             @Override
@@ -335,11 +300,9 @@ public final class Table extends Observable {
             }
         });
 
-        preferencesMenu.add(flipBoardMenuItem);
-        preferencesMenu.addSeparator();
-
-        return preferencesMenu;
-
+        optionsMenu.add(colorChooserSubMenu);
+        optionsMenu.add(flipBoardMenuItem);
+        return optionsMenu;
     }
 
     private static String playerInfo(final Player player) {
@@ -403,7 +366,7 @@ public final class Table extends Observable {
         notifyObservers(playerType);
     }
 
-    private void setupUpdate(final Setup gameSetup) {
+    private void setupUpdate(final GameMode gameSetup) {
         setChanged();
         notifyObservers(gameSetup);
     }
@@ -453,7 +416,7 @@ public final class Table extends Observable {
         protected Move doInBackground() throws Exception {
             final Move bestMove;
             final Move bookMove = Table.get().getUseBook()
-                    ? MySqlGamePersistence.get().getNextBestMove(Table.get().getGameBoard(),
+                    ? GamePersistence.get().getNextBestMove(Table.get().getGameBoard(),
                     Table.get().getGameBoard().currentPlayer(),
                     Table.get().getMoveLog().getMoves().toString().replaceAll("\\[", "").replaceAll("\\]", ""))
                     : MoveFactory.getNullMove();
@@ -648,7 +611,6 @@ public final class Table extends Observable {
                         public void run() {
                             gameHistoryPanel.redo(chessBoard, moveLog);
                             takenPiecesPanel.redo(moveLog);
-                            //if (gameSetup.isAIPlayer(chessBoard.currentPlayer())) {
                                 Table.get().moveMadeUpdate(PlayerType.HUMAN);
                             //}
                             boardPanel.drawBoard(chessBoard);

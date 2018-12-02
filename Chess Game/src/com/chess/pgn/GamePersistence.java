@@ -11,11 +11,11 @@ import com.chess.engine.board.Board;
 import com.chess.engine.board.Move;
 import com.chess.engine.player.Player;
 
-public class MySqlGamePersistence implements Persistence {
+public class GamePersistence implements Persistence {
 
     private final Connection dbConnection;
 
-    private static MySqlGamePersistence INSTANCE = new MySqlGamePersistence();
+    private static GamePersistence INSTANCE = new GamePersistence();
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     private static final String DB_URL = "jdbc:mysql://localhost/chessgames";
     private static final String USER = "root";
@@ -26,7 +26,7 @@ public class MySqlGamePersistence implements Persistence {
         "INSTR(substr(g1.moves, LENGTH('%s') + %d, LENGTH(g1.moves)), ',') - 1) ORDER BY 2 DESC";
 
 
-    private MySqlGamePersistence() {
+    private GamePersistence() {
         this.dbConnection = createDBConnection();
         createGameTable();
         createIndex("outcome", "OutcomeIndex");
@@ -45,7 +45,7 @@ public class MySqlGamePersistence implements Persistence {
         }
     }
 
-    public static MySqlGamePersistence get() {
+    public static GamePersistence get() {
         return INSTANCE;
     }
 

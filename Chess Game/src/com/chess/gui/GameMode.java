@@ -9,7 +9,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-class Setup extends JDialog {
+class GameMode extends JDialog {
 
     private PlayerType whitePlayerType;
     private PlayerType blackPlayerType;
@@ -18,8 +18,8 @@ class Setup extends JDialog {
     private static final String HUMAN_TEXT = "Human";
     private static final String COMPUTER_TEXT = "Computer";
 
-    Setup(final JFrame frame,
-          final boolean modal) {
+    GameMode(final JFrame frame,
+             final boolean modal) {
         super(frame, modal);
         final JPanel myPanel = new JPanel(new GridLayout(0, 1));
         final JRadioButton whiteHumanButton = new JRadioButton(HUMAN_TEXT);
@@ -55,14 +55,14 @@ class Setup extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 whitePlayerType = whiteComputerButton.isSelected() ? PlayerType.COMPUTER : PlayerType.HUMAN;
                 blackPlayerType = blackComputerButton.isSelected() ? PlayerType.COMPUTER : PlayerType.HUMAN;
-                Setup.this.setVisible(false);
+                GameMode.this.setVisible(false);
             }
         });
 
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Cancel");
-                Setup.this.setVisible(false);
+                GameMode.this.setVisible(false);
             }
         });
 
