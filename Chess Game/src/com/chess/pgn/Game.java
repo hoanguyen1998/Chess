@@ -4,11 +4,11 @@ import java.util.List;
 
 public abstract class Game implements Playable {
 
-    protected final PGNGameTags tags;
+    protected final GameTags tags;
     protected final List<String> moves;
     protected final String winner;
 
-    Game(final PGNGameTags tags,
+    Game(final GameTags tags,
          final List<String> moves,
          final String outcome) {
         this.tags = tags;

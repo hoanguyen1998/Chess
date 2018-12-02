@@ -1,11 +1,11 @@
 package com.chess.gui;
 
-import com.chess.engine.classic.board.*;
-import com.chess.engine.classic.board.Move.MoveFactory;
-import com.chess.engine.classic.pieces.Piece;
-import com.chess.engine.classic.player.Player;
-import com.chess.engine.classic.player.ai.StandardBoardEvaluator;
-import com.chess.engine.classic.player.ai.StockAlphaBeta;
+import com.chess.engine.board.*;
+import com.chess.engine.board.Move.MoveFactory;
+import com.chess.engine.pieces.Piece;
+import com.chess.engine.player.Player;
+import com.chess.engine.player.ai.StandardBoardEvaluator;
+import com.chess.engine.player.ai.StockAlphaBeta;
 import com.chess.pgn.FenUtilities;
 import com.chess.pgn.MySqlGamePersistence;
 import com.google.common.collect.Lists;
@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-import static com.chess.pgn.PGNUtilities.persistPGNFile;
-import static com.chess.pgn.PGNUtilities.writeGameToPGNFile;
+import static com.chess.pgn.Utilities.persistPGNFile;
+import static com.chess.pgn.Utilities.writeGameToPGNFile;
 import static javax.swing.JFrame.setDefaultLookAndFeelDecorated;
 import static javax.swing.SwingUtilities.*;
 
@@ -34,7 +34,7 @@ public final class Table extends Observable {
     private final DebugPanel debugPanel;
     private final BoardPanel boardPanel;
     private final MoveLog moveLog;
-    private final GameSetup gameSetup;
+    private final Setup gameSetup;
     private Board chessBoard;
     private Move computerMove;
     private Tile sourceTile;
@@ -70,7 +70,7 @@ public final class Table extends Observable {
         this.boardPanel = new BoardPanel();
         this.moveLog = new MoveLog();
         this.addObserver(new TableGameAIWatcher());
-        this.gameSetup = new GameSetup(this.gameFrame, true);
+        this.gameSetup = new Setup(this.gameFrame, true);
         this.gameFrame.add(this.takenPiecesPanel, BorderLayout.WEST);
         this.gameFrame.add(this.boardPanel, BorderLayout.CENTER);
         this.gameFrame.add(this.gameHistoryPanel, BorderLayout.EAST);
@@ -114,7 +114,7 @@ public final class Table extends Observable {
         return this.debugPanel;
     }
 
-    private GameSetup getGameSetup() {
+    private Setup getGameSetup() {
         return this.gameSetup;
     }
 
@@ -292,7 +292,7 @@ public final class Table extends Observable {
 
         final JMenu preferencesMenu = new JMenu("Preferences");
 
-        final JMenu colorChooserSubMenu = new JMenu("Choose Colors");
+        final JMenu colorChooserSubMenu = new JMenu("Change Colors");
         colorChooserSubMenu.setMnemonic(KeyEvent.VK_S);
 
         final JMenuItem chooseDarkMenuItem = new JMenuItem("Choose Dark Tile Color");
@@ -300,10 +300,6 @@ public final class Table extends Observable {
 
         final JMenuItem chooseLightMenuItem = new JMenuItem("Choose Light Tile Color");
         colorChooserSubMenu.add(chooseLightMenuItem);
-
-        final JMenuItem chooseLegalHighlightMenuItem = new JMenuItem(
-                "Choose Legal Move Highlight Color");
-        colorChooserSubMenu.add(chooseLegalHighlightMenuItem);
 
         preferencesMenu.add(colorChooserSubMenu);
 
@@ -329,14 +325,6 @@ public final class Table extends Observable {
             }
         });
 
-        chooseLegalHighlightMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                System.out.println("implement me");
-                Table.get().getGameFrame().repaint();
-            }
-        });
-
         final JMenuItem flipBoardMenuItem = new JMenuItem("Flip board");
 
         flipBoardMenuItem.addActionListener(new ActionListener() {
@@ -349,31 +337,6 @@ public final class Table extends Observable {
 
         preferencesMenu.add(flipBoardMenuItem);
         preferencesMenu.addSeparator();
-
-
-        final JCheckBoxMenuItem cbLegalMoveHighlighter = new JCheckBoxMenuItem(
-                "Highlight Legal Moves", false);
-
-        cbLegalMoveHighlighter.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                highlightLegalMoves = cbLegalMoveHighlighter.isSelected();
-            }
-        });
-
-        preferencesMenu.add(cbLegalMoveHighlighter);
-
-        final JCheckBoxMenuItem cbUseBookMoves = new JCheckBoxMenuItem(
-                "Use Book Moves", false);
-
-        cbUseBookMoves.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                useBook = cbUseBookMoves.isSelected();
-            }
-        });
-
-        preferencesMenu.add(cbUseBookMoves);
 
         return preferencesMenu;
 
@@ -440,7 +403,7 @@ public final class Table extends Observable {
         notifyObservers(playerType);
     }
 
-    private void setupUpdate(final GameSetup gameSetup) {
+    private void setupUpdate(final Setup gameSetup) {
         setChanged();
         notifyObservers(gameSetup);
     }
@@ -462,13 +425,13 @@ public final class Table extends Observable {
 
             if (Table.get().getGameBoard().currentPlayer().isInCheckMate()) {
                 JOptionPane.showMessageDialog(Table.get().getBoardPanel(),
-                        "Game Over: Player " + Table.get().getGameBoard().currentPlayer() + " is in checkmate!", "Game Over",
+                        "Game Over: " + Table.get().getGameBoard().currentPlayer() + " is in checkmate!", "Game Over",
                         JOptionPane.INFORMATION_MESSAGE);
             }
 
             if (Table.get().getGameBoard().currentPlayer().isInStaleMate()) {
                 JOptionPane.showMessageDialog(Table.get().getBoardPanel(),
-                        "Game Over: Player " + Table.get().getGameBoard().currentPlayer() + " is in stalemate!", "Game Over",
+                        "Game Over: " + Table.get().getGameBoard().currentPlayer() + " is in stalemate!", "Game Over",
                         JOptionPane.INFORMATION_MESSAGE);
             }
 
@@ -498,12 +461,10 @@ public final class Table extends Observable {
                 bestMove = bookMove;
             }
             else {
-                //final int moveNumber = Table.get().getMoveLog().size();
-                //final int quiescenceFactor = 2000 + (100 * moveNumber);
+
                 final StockAlphaBeta strategy =
                         new StockAlphaBeta(Table.get().getGameSetup().getSearchDepth());
                 strategy.addObserver(Table.get().getDebugPanel());
-                //Table.get().getGameBoard().currentPlayer().setMoveStrategy(strategy);
                 bestMove = strategy.execute(
                         Table.get().getGameBoard());
             }
@@ -719,7 +680,6 @@ public final class Table extends Observable {
             assignTileColor();
             assignTilePieceIcon(board);
             highlightTileBorder(board);
-            highlightLegals(board);
             highlightAIMove();
             validate();
             repaint();
@@ -753,20 +713,7 @@ public final class Table extends Observable {
             }
         }
 
-        private void highlightLegals(final Board board) {
-            if (Table.get().getHighlightLegalMoves()) {
-                for (final Move move : pieceLegalMoves(board)) {
-                    if (move.getDestinationCoordinate() == this.tileId) {
-                        try {
-                            add(new JLabel(new ImageIcon(ImageIO.read(new File("art/misc/green_dot.png")))));
-                        }
-                        catch (final IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
+
 
         private Collection<Move> pieceLegalMoves(final Board board) {
             if(humanMovedPiece != null && humanMovedPiece.getPieceAllegiance() == board.currentPlayer().getAlliance()) {

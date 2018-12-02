@@ -6,7 +6,7 @@ public class InvalidGame extends Game {
 
     final String malformedGameText;
 
-    public InvalidGame(final PGNGameTags tags,
+    public InvalidGame(final GameTags tags,
                        final String malformedGameText,
                        final String outcome) {
         super(tags, Collections.<String>emptyList(), outcome);

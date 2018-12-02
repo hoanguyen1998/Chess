@@ -18,8 +18,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 
-import com.chess.engine.classic.board.Move;
-import com.chess.engine.classic.pieces.Piece;
+import com.chess.engine.board.Move;
+import com.chess.engine.pieces.Piece;
 import com.chess.gui.Table.MoveLog;
 import com.google.common.primitives.Ints;
 
@@ -82,7 +82,7 @@ class TakenPiecesPanel extends JPanel {
         
         for (final Piece takenPiece : whiteTakenPieces) {
             try {
-                final BufferedImage image = ImageIO.read(new File("art/holywarriors/"
+                final BufferedImage image = ImageIO.read(new File("art/fancy/"
                         + takenPiece.getPieceAllegiance().toString().substring(0, 1) + "" + takenPiece.toString()
                         + ".gif"));
                 final ImageIcon ic = new ImageIcon(image);
@@ -97,7 +97,7 @@ class TakenPiecesPanel extends JPanel {
 
         for (final Piece takenPiece : blackTakenPieces) {
             try {
-                final BufferedImage image = ImageIO.read(new File("art/holywarriors/"
+                final BufferedImage image = ImageIO.read(new File("art/fancy/"
                         + takenPiece.getPieceAllegiance().toString().substring(0, 1) + "" + takenPiece.toString()
                         + ".gif"));
                 final ImageIcon ic = new ImageIcon(image);

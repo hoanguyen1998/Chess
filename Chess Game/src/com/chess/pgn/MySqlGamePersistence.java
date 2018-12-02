@@ -7,11 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.Move;
-import com.chess.engine.classic.player.Player;
+import com.chess.engine.board.Board;
+import com.chess.engine.board.Move;
+import com.chess.engine.player.Player;
 
-public class MySqlGamePersistence implements PGNPersistence {
+public class MySqlGamePersistence implements Persistence {
 
     private final Connection dbConnection;
 
@@ -85,7 +85,7 @@ public class MySqlGamePersistence implements PGNPersistence {
             e.printStackTrace();
         }
         System.out.println("\tselected book move = " +bestMove+ " with " +count+ " hits");
-        return PGNUtilities.createMove(board, bestMove);
+        return Utilities.createMove(board, bestMove);
     }
 
     private void createGameTable() {
