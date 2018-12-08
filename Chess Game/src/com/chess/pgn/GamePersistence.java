@@ -7,9 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.chess.engine.board.Board;
-import com.chess.engine.board.Move;
-import com.chess.engine.player.Player;
+import com.chess.game.board.Board;
+import com.chess.game.board.Move;
+import com.chess.game.player.Player;
 
 public class GamePersistence implements Persistence {
 

@@ -1,8 +1,8 @@
 package com.chess.pgn;
 
-import com.chess.engine.board.Board;
-import com.chess.engine.board.BoardUtils;
-import com.chess.engine.board.Move;
+import com.chess.game.board.Board;
+import com.chess.game.board.BoardUtils;
+import com.chess.game.board.Move;
 import com.chess.gui.Table.MoveLog;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.chess.engine.board.Move.MoveFactory;
+import static com.chess.game.board.Move.MoveFactory;
 
 public class Utilities {
 

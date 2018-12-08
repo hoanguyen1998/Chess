@@ -1,7 +1,7 @@
 package com.chess.gui;
 
-import com.chess.engine.Alliance;
-import com.chess.engine.player.Player;
+import com.chess.game.Alliance;
+import com.chess.game.player.Player;
 import com.chess.gui.Table.PlayerType;
 
 import javax.swing.*;

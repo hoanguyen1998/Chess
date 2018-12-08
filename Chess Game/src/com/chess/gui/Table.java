@@ -1,10 +1,10 @@
 package com.chess.gui;
 
-import com.chess.engine.board.*;
-import com.chess.engine.board.Move.MoveFactory;
-import com.chess.engine.pieces.Piece;
-import com.chess.engine.player.Player;
-import com.chess.engine.player.ai.AlphaBeta;
+import com.chess.game.board.*;
+import com.chess.game.board.Move.MoveFactory;
+import com.chess.game.pieces.Piece;
+import com.chess.game.player.Player;
+import com.chess.game.player.ai.AlphaBeta;
 import com.chess.pgn.GamePersistence;
 import com.google.common.collect.Lists;
 
@@ -29,7 +29,6 @@ public final class Table extends Observable {
     private final JFrame gameFrame;
     private final GameHistoryPanel gameHistoryPanel;
     private final TakenPiecesPanel takenPiecesPanel;
-    private final DebugPanel debugPanel;
     private final BoardPanel boardPanel;
     private final MoveLog moveLog;
     private final GameMode gameSetup;
@@ -40,12 +39,11 @@ public final class Table extends Observable {
     private Piece humanMovedPiece;
     private BoardDirection boardDirection;
     private String pieceIconPath;
-    private boolean highlightLegalMoves;
     private boolean useBook;
     private Color lightTileColor = Color.decode("#FFFACD");
     private Color darkTileColor = Color.decode("#593E1A");
 
-    private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(700, 700);
+    private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(700, 600);
     private static final Dimension BOARD_PANEL_DIMENSION = new Dimension(400, 350);
     private static final Dimension TILE_PANEL_DIMENSION = new Dimension(10, 10);
 
@@ -59,11 +57,10 @@ public final class Table extends Observable {
         this.gameFrame.setLayout(new BorderLayout());
         this.chessBoard = Board.createStandardBoard();
         this.boardDirection = BoardDirection.NORMAL;
-        this.highlightLegalMoves = false;
         this.useBook = false;
         this.pieceIconPath = "image/";
         this.gameHistoryPanel = new GameHistoryPanel();
-        this.debugPanel = new DebugPanel();
+        //this.debugPanel = new DebugPanel();
         this.takenPiecesPanel = new TakenPiecesPanel();
         this.boardPanel = new BoardPanel();
         this.moveLog = new MoveLog();
@@ -72,7 +69,6 @@ public final class Table extends Observable {
         this.gameFrame.add(this.takenPiecesPanel, BorderLayout.WEST);
         this.gameFrame.add(this.boardPanel, BorderLayout.CENTER);
         this.gameFrame.add(this.gameHistoryPanel, BorderLayout.EAST);
-        this.gameFrame.add(debugPanel, BorderLayout.SOUTH);
         setDefaultLookAndFeelDecorated(true);
         this.gameFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.gameFrame.setSize(OUTER_FRAME_DIMENSION);
@@ -108,16 +104,8 @@ public final class Table extends Observable {
         return this.takenPiecesPanel;
     }
 
-    private DebugPanel getDebugPanel() {
-        return this.debugPanel;
-    }
-
     private GameMode getGameSetup() {
         return this.gameSetup;
-    }
-
-    private boolean getHighlightLegalMoves() {
-        return this.highlightLegalMoves;
     }
 
     private boolean getUseBook() {
@@ -129,7 +117,6 @@ public final class Table extends Observable {
         Table.get().getGameHistoryPanel().redo(chessBoard, Table.get().getMoveLog());
         Table.get().getTakenPiecesPanel().redo(Table.get().getMoveLog());
         Table.get().getBoardPanel().drawBoard(Table.get().getGameBoard());
-        Table.get().getDebugPanel().redo();
     }
 
     private void populateMenuBar(final JMenuBar tableMenuBar) {
@@ -172,6 +159,15 @@ public final class Table extends Observable {
             }
         });
         filesMenu.add(saveToPGN);
+        final JMenuItem about = new JMenuItem("About", KeyEvent.VK_S);
+        about.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                AboutFrame about = new AboutFrame();
+
+            }
+        });
+        filesMenu.add(about);
 
         final JMenuItem exitMenuItem = new JMenuItem("Exit", KeyEvent.VK_X);
         exitMenuItem.addActionListener(new ActionListener() {
@@ -305,7 +301,6 @@ public final class Table extends Observable {
         Table.get().getGameHistoryPanel().redo(chessBoard, Table.get().getMoveLog());
         Table.get().getTakenPiecesPanel().redo(Table.get().getMoveLog());
         Table.get().getBoardPanel().drawBoard(chessBoard);
-        Table.get().getDebugPanel().redo();
     }
 
     private static void loadPGNFile(final File pgnFile) {
@@ -334,7 +329,6 @@ public final class Table extends Observable {
         Table.get().getGameHistoryPanel().redo(chessBoard, Table.get().getMoveLog());
         Table.get().getTakenPiecesPanel().redo(Table.get().getMoveLog());
         Table.get().getBoardPanel().drawBoard(chessBoard);
-        Table.get().getDebugPanel().redo();
     }
 
     private void moveMadeUpdate(final PlayerType playerType) {
@@ -403,7 +397,6 @@ public final class Table extends Observable {
 
                 final AlphaBeta strategy =
                         new AlphaBeta(Table.get().getGameSetup().getSearchDepth());
-                strategy.addObserver(Table.get().getDebugPanel());
                 bestMove = strategy.execute(
                         Table.get().getGameBoard());
             }
@@ -420,7 +413,6 @@ public final class Table extends Observable {
                 Table.get().getGameHistoryPanel().redo(Table.get().getGameBoard(), Table.get().getMoveLog());
                 Table.get().getTakenPiecesPanel().redo(Table.get().getMoveLog());
                 Table.get().getBoardPanel().drawBoard(Table.get().getGameBoard());
-                Table.get().getDebugPanel().redo();
                 Table.get().moveMadeUpdate(PlayerType.COMPUTER);
             } catch (final Exception e) {
                 e.printStackTrace();
@@ -590,7 +582,6 @@ public final class Table extends Observable {
                                 Table.get().moveMadeUpdate(PlayerType.HUMAN);
                             //}
                             boardPanel.drawBoard(chessBoard);
-                            debugPanel.redo();
                         }
                     });
                 }
